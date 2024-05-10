@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collage Maker</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* Estilos personalizados pueden ir aquí */
+  </style>
+</head>
+<body>
+
+<div class="container mt-5">
+  <h1 class="mb-4">Crea tu collage</h1>
+
+  <form id="collageForm" method="post" enctype="multipart/form-data">
+    <!-- Sección de selección de imágenes -->
+    <div class="row">
+      {% for i in range(1, 7) %}
+      <div class="col-md-6">
+        <h2>Imagen {{ i }}</h2>
+        <div class="form-group">
+          <label for="image{{ i }}">Selecciona una imagen:</label>
+          <input type="file" class="form-control-file" name="image{{ i }}" id="image{{ i }}" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label for="width{{ i }}">Ancho (en píxeles):</label>
+          <input type="number" class="form-control" name="width{{ i }}" id="width{{ i }}">
+        </div>
+        <div class="form-group">
+          <label for="height{{ i }}">Alto (en píxeles):</label>
+          <input type="number" class="form-control" name="height{{ i }}" id="height{{ i }}">
+        </div>
+        <div class="form-group">
+          <label for="emotion{{ i }}">Emoción:</label>
+          <select class="form-control" name="emotion{{ i }}" id="emotion{{ i }}">
+            <option value="feliz">Feliz</option>
+            <option value="triste">Triste</option>
+            <!-- Agrega más opciones de emoción según sea necesario -->
+          </select>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">Generar Collage</button>
+  </form>
+
+  <!-- Espacio para mostrar el collage generado -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <h2>Collage generado</h2>
+      <div id="collage"></div>
+      <div id="downloadButton"></div> <!-- Aquí se mostrará el botón de descarga -->
+    </div>
+  </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Lógica de JavaScript para generar el collage y agregar botón de descarga
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("collageForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Evitar el envío del formulario por defecto
+      
+      // Recopilar datos del formulario
+      var formData = new FormData(this);
+      
+      // Enviar los datos al servidor
+      fetch('/', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Manejar la respuesta del servidor (por ejemplo, mostrar el collage generado)
+        console.log(data);
+        if (data.collage_filename) {
+          // Construir la URL de la imagen del collage
+          var collageUrl = '/uploads/' + data.collage_filename;
+          // Mostrar la imagen del collage en el espacio reservado
+          document.getElementById("collage").innerHTML = `<img src="${collageUrl}" alt="Collage generado">`;
+          // Agregar el botón de descarga
+          document.getElementById("downloadButton").innerHTML = `<a href="${collageUrl}" class="btn btn-success mt-2" download="collage.jpg">Descargar Collage</a>`;
+        } else {
+          console.error('No se recibió el nombre del archivo del collage.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
